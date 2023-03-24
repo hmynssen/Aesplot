@@ -42,6 +42,7 @@ class PlotLikeR():
     def __init__(self, file=None):
         self.data=0
         self.plot_cfg_bool = False
+        self.plot_cfg_grid_bool = False
         self.is_legend = False
         self.plot_names = []
         self.numerical_results = {}
@@ -137,34 +138,54 @@ class PlotLikeR():
                     else:
                         exec(f'self.{f} = self.{f}[self.{f}["{k}"]=="{v}"]')
 
-    def plot_cfg(self, mat_params:dict={}):
-        if not self.plot_cfg_bool:
-            plt.rcParams.update({
-                'font.family': 'serif',
-                'font.serif': 'DejaVu Serif',
-                'mathtext.fontset': 'dejavuserif',
-                'font.size':18,
-                'axes.labelsize': 26,
-                'axes.grid': True,
-                'axes.grid.which': 'both',
-                'xtick.labelsize':13,
-                'xtick.minor.size': 0,
-                'ytick.labelsize':13,
-                'ytick.minor.size': 0,
-                'axes.linewidth':0,
-                'axes.axisbelow':True,
-                'axes.facecolor':'#EBEBEB',
-                'text.usetex': True,
-                'text.latex.preamble': '\\usepackage{amsmath}\n \\usepackage[dvipsnames]{xcolor}'
-            })
-        grab_params = list(plt.rcParams.keys())
-        for key in mat_params.keys():
-            if not key in grab_params:
-                continue
-            plt.rcParams.update({
-                f'{key}':f'{mat_params[key]}'
-            })
-        self.plot_cfg_bool = True
+        def plt_cfg(self):
+            if not self.plot_cfg_bool:
+                plt.rcParams.update({
+                    'font.family': 'serif',
+                    'font.serif': 'DejaVu Serif',
+                    'mathtext.fontset': 'dejavuserif',
+                    'font.size':18,
+                    'axes.labelsize': 26,
+                    'axes.grid': True,
+                    'axes.grid.which': 'both',
+                    'xtick.labelsize':13,
+                    'xtick.minor.size': 0,
+                    'ytick.labelsize':13,
+                    'ytick.minor.size': 0,
+                    'axes.linewidth':0,
+                    'axes.axisbelow':True,
+                    'axes.facecolor':'#EBEBEB',
+                    'text.usetex': True,
+                    'text.latex.preamble': '\\usepackage{amsmath}\n \\usepackage[dvipsnames]{xcolor}'
+                })
+            grab_params = list(plt.rcParams.keys())
+            for key in mat_params.keys():
+                if not key in grab_params:
+                    continue
+                plt.rcParams.update({
+                    f'{key}':f'{mat_params[key]}'
+                })
+            self.plot_cfg_bool = True
+
+        def plot_cfg_grid(self, grid_params:dict={}):
+            if not self.plot_cfg_grid_bool:
+                plt.rcParams.update({
+                    'axes.grid':True, # display grid or not
+                    'axes.grid.axis':'both', # which axis the grid should apply to
+                    'axes.grid.which':'both', # grid lines at {major, minor, both} ticks
+                    'grid.color':"white", # grid color
+                    'grid.linestyle':'-', # solid
+                    'grid.linewidth':0.8, # in points
+                    'grid.alpha':1.0, # transparency, between 0.0 and 1.0
+                })
+            grab_params = list(plt.rcParams.keys())
+            for key in grid_params.keys():
+                if not key in grab_params:
+                    continue
+                plt.rcParams.update({
+                    f'{key}':f'{mat_params[key]}'
+                })
+            self.plot_cfg_grid_bool = True
 
     def plot(self, params:dict={}, figsize:tuple=(10.5, 7.75), grid_minor_params:dict = {}, grid_major_params:dict = {}):
         '''
@@ -262,19 +283,33 @@ class PlotLikeR():
         if self.is_legend:
             self.legend = plt.legend()
 
-        gmp = grid_minor_params
-        self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
-            lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
-            ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
-            which='minor',
-            alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.5)
+        if not self.plot_cfg_grid_bool:
+            gmp = grid_minor_params
+            self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+                lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
+                ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
+                which='minor',
+                alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.5)
 
-        gmp = grid_major_params
-        self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
-            lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
-            ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
-            which='major',
-            alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
+            gmp = grid_major_params
+            self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+                lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
+                ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
+                which='major',
+                alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
+        else:
+            gmp = grid_minor_params
+            self.ax.grid(lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
+                ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
+                which='minor',
+                alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.5)
+
+            gmp = grid_major_params
+            self.ax.grid(lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
+                ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
+                which='major',
+                alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
+
 
     def set_legend_marker(self, params):
         if not self._check_plot_exists():
