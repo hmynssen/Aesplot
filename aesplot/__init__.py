@@ -33,10 +33,16 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import scipy
 
+if __name__=='__main__':
+    from utils import SVGText
+else:
+    from .utils import SVGText
+
 class PlotLikeR():
     def __init__(self, file=None):
         self.data=0
         self.plot_cfg_bool = False
+        self.is_legend = False
         self.plot_names = []
         self.numerical_results = {}
         self.supported_fig_types = ['png', 'svg', 'pdf', 'eps']
@@ -162,12 +168,25 @@ class PlotLikeR():
 
     def plot(self, params:dict={}, figsize:tuple=(10.5, 7.75), grid_minor_params:dict = {}, grid_major_params:dict = {}):
         '''
+            The grid params are not the ticks!
+            Default minor params:
+                grid_minor_params = {
+                    'c': "white",
+                    'lw': 0.6,
+                    'ls': '-',
+                    'alpha': 0.5
+                }
 
+            Default major params:
+                grid_major_params = {
+                    'c': "white",
+                    'lw': 1.5,
+                    'ls': '-',
+                    'alpha': 0.75
+                }
         '''
         if not self.plot_cfg_bool:
             self.plot_cfg()
-        is_legend = False
-
         selected_names = self.plot_names
         selected = []
         for name in selected_names:
@@ -177,7 +196,8 @@ class PlotLikeR():
                 print(f'NaN value ecountered in {name}')
                 print(f'Removed row with pandas.dropna() to proceed')
             selected.append(aux)
-        plt.figure(figsize=figsize)
+        self.figure = plt.figure(figsize=figsize)
+        self.ax = self.figure.add_subplot()
         for index,(s,name) in enumerate(zip(selected,selected_names)):
             x = s['x']
             y = s['y']
@@ -187,7 +207,7 @@ class PlotLikeR():
                 continue
             par = params[name]
             if 'label' in par.keys() and not par['label']=='':
-                is_legend = True
+                self.is_legend = True
 
             if 'plot_linear' in par.keys() and par['plot_linear']:
                 global_range = par['global'] if 'global' in par.keys() else False
@@ -233,30 +253,32 @@ class PlotLikeR():
                     raise err_msg
 
             if 'scatter_plot' in par.keys() and par['scatter_plot']:
-                plt.scatter(x,y,
+                self.ax.scatter(x,y,
                     c=par["cs"] if 'cs' in par.keys() else 'black',
                     marker=par["marker"] if 'marker' in par.keys() else 'o',
                     s=par['s'] if 's' in par.keys() else 5,
                     label=par['label'] if 'label' in par.keys() else '',
                     zorder=3*index+2)
-        if is_legend:
+        if self.is_legend:
             self.legend = plt.legend()
 
         gmp = grid_minor_params
-        plt.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+        self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
             lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
             ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
             which='minor',
             alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.5)
 
         gmp = grid_major_params
-        plt.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+        self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
             lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
             ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
             which='major',
             alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
 
     def set_legend_marker(self, params):
+        if not self._check_plot_exists():
+            return
         if 's' in params.keys():
             if isinstance(params['s'], list):
                 l_size = self.legend.legend_handles.shape[0]
@@ -269,22 +291,36 @@ class PlotLikeR():
                 for handle in self.legend.legend_handles:
                     handle._sizes = [size]
 
+    def set_axis_label(self, x='', y=''):
+        if not self._check_plot_exists():
+            return
+        if isinstance(x, str) and x:
+            local = self.ax.set_xlabel(x)
+        if isinstance(y, str) and y:
+            self.ax.set_ylabel(y)
+
     def set_xlim(self, x1, x2=False):
+        if not self._check_plot_exists():
+            return
         if not x2:
-            plt.xlim(x1)
+            self.ax.xlim(x1)
         else:
-            plt.xlim(x1,x2)
+            self.ax.xlim(x1,x2)
     def set_ylim(self, y1, y2=False):
+        if not self._check_plot_exists():
+            return
         if not y2:
-            plt.ylim(y1)
+            self.ax.ylim(y1)
         else:
-            plt.ylim(y1,y2)
+            self.ax.ylim(y1,y2)
 
     def set_xticks(self,low=False,high=False,interval=False,arange=False,which='major'):
         '''
         Prefer to use ticks instead of limits since ticks
         will also set the limits
         '''
+        if not self._check_plot_exists():
+            return
 
         if not isinstance(arange, np.ndarray):
             if isinstance(low,bool) or isinstance(high,bool):
@@ -306,9 +342,9 @@ class PlotLikeR():
             local_arange = arange
 
         if which=='major':
-            plt.xticks(local_arange)
+            self.ax.set_xticks(local_arange)
         if which=='minor':
-            plt.xticks(local_arange,minor=True)
+            self.ax.set_xticks(local_arange,minor=True)
 
         if not which=='major' and not which=='minor':
             print(f'Cannot set ticks for {which}')
@@ -317,6 +353,8 @@ class PlotLikeR():
         Prefer to use ticks instead of limits since ticks
         will also set the limits
         '''
+        if not self._check_plot_exists():
+            return
 
         if not isinstance(arange, np.ndarray):
             if isinstance(low,bool) or isinstance(high,bool):
@@ -338,9 +376,9 @@ class PlotLikeR():
             local_arange = arange
 
         if which=='major':
-            plt.yticks(local_arange)
+            self.ax.set_yticks(local_arange)
         if which=='minor':
-            plt.yticks(local_arange,minor=True)
+            self.ax.set_yticks(local_arange,minor=True)
 
         if not which=='major' and not which=='minor':
             print(f'Cannot set ticks for {which}')
@@ -384,11 +422,41 @@ class PlotLikeR():
             output.write(outputtext)
 
     def save_plots(self,type='png',path='', file='results'):
+        def fix_svg(path,file):
+            #For svg only
+            majorx = [v._x for v in self.ax.get_xmajorticklabels()]#majorx #x ticks
+            minorx = [v._x for v in self.ax.get_xminorticklabels()] #only if minor ticks have numbers
+            xlabel = self.ax.get_xlabel()
+            majory = [v._y for v in self.ax.get_ymajorticklabels()] #y ticks
+            minory= [v._y for v in self.ax.get_yminorticklabels()] #only if minor ticks have numbers
+            ylabel = self.ax.get_ylabel()
+            if self.is_legend:
+                l = []
+                for label in self.legend.legend_handles:
+                    l.append(label.get_label())
+                legends = l
+            else:
+                legends = ['']
+            svg = utils.SVGText(svg_file=f'{path}{file}',
+                                majorx = majorx, #x ticks
+                                minorx = minorx, #only necessary if minor ticks have numbers
+                                xlabel = xlabel,
+                                majory = majory, #y ticks
+                                minory= minory, #only necessary if minor ticks have numbers
+                                ylabel = ylabel,
+                                legend = legends)
+            params = {
+                'legend_font_size':18,
+            }
+            svg.run()
+
         if path and not path[-1]=='/':
             path+='/'
         if not isinstance(file,str):
             raise 'File name for saving images has to be a single string'
         ending = file.split('.')
+
+
         if len(ending)<2:
             pass
         else:
@@ -397,6 +465,8 @@ class PlotLikeR():
             else:
                 if ending[1] in self.supported_fig_types and not isinstance(type,list):
                     plt.savefig(f"{path}{file}",bbox_inches='tight')
+                    if ending[1]=='svg':
+                        fix_svg(path,file)
                     return
                 else:
                     raise f'Cannot save {ending[1]} images, please use:\n{self.supported_fig_types}'
@@ -404,12 +474,16 @@ class PlotLikeR():
             t = type
             if t in self.supported_fig_types:
                 plt.savefig(f"{path}{file}.{t}",bbox_inches='tight')
+                if t=='svg':
+                    fix_svg(path,f'{file}.{t}')
             else:
                 print(f'Canont save figure in format {t}')
         if isinstance(type,list):
             for t in type:
                 if t in self.supported_fig_types:
                     plt.savefig(f"{path}{file}.{t}",bbox_inches='tight')
+                    if t=='svg':
+                        fix_svg(path,f'{file}.{t}')
                 else:
                     print(f'Canont save figure in format {t}')
 
@@ -440,7 +514,7 @@ class PlotLikeR():
         sy=(tss-rss)/(n-2)
         frac = ((x2 - x.mean())**2)/self._low_key_sum(x)
         ci = t * np.sqrt(sy) * np.sqrt(1/n + frac)
-        plt.fill_between(x2, y2 - ci, y2 + ci,
+        self.ax.fill_between(x2, y2 - ci, y2 + ci,
                         color=col,
                         facecolor=col,
                         edgecolor=col,
@@ -477,9 +551,14 @@ class PlotLikeR():
         return x2,y2
 
     def _plot(self, x, y, par, index):
-        plt.plot(x, y,
-            ls=par["lsp"] if 'lsp' in par.keys() else '-',
-            lw=par["lwp"] if 'lwp' in par.keys() else 1.,
-            c=par["cp"] if 'cp' in par.keys() else 'black',
+        self.ax.plot(x, y,
+            ls=par['lsp'] if 'lsp' in par.keys() else '-',
+            lw=par['lwp'] if 'lwp' in par.keys() else 1.,
+            c=par['cp'] if 'cp' in par.keys() else 'black',
             alpha=par['alphap'] if 'alphap' in par.keys() else 1.,
             zorder=3*index+1)
+
+    def _check_plot_exists(self):
+        if hasattr(self, 'ax') and hasattr(self, 'figure'):
+            return True
+        return False

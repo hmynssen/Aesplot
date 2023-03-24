@@ -145,9 +145,9 @@ legend = {
 }
 example.set_legend_marker(legend)
 
-example.show()
 example.save_results()
 example.save_plots(path=save_path,file='example.png')
+example.show()
 '''
     return basic_text
 
@@ -298,9 +298,9 @@ legend = {
 }
 example.set_legend_marker(legend)
 
-example.show()
 example.save_results()
 example.save_plots(path=save_path,file='example.png')
+example.show()
 '''
     with open(f'{path}{file_name}','w') as file:
         file.write(basic_text)
