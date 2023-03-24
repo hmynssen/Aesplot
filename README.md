@@ -53,7 +53,7 @@ Some mathematical notation is usually used when plotting graphs such as square r
 Using utils.SVGText() allows the transformation from:
 
 | | | | |
-| --- | --- | --- | --- | --- |
+| --- | --- | --- | --- |
 | \\text{} | \\textit{} | \\textb{} | \\left |
 | \\right | \\sqrt | \\sqrt[3] | \\sqrt[4] |
 | ^ | ^{} | _ | _{} |
