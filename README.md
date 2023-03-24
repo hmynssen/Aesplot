@@ -51,6 +51,7 @@ Additionally, when using LaTex equations in labels and/or legends, some elements
 Some mathematical notation is usually used when plotting graphs such as square root, superscript, index and many others. And, since matplotlib supports LaTex interpretation/compilation, it is useful to have a translation from one markup language to another.
 
 Using utils.SVGText() allows the transformation from:
+
 | | | | |
 | --- | --- | --- | --- | --- |
 | \\text{} | \\textit{} | \\textb{} | \\left |
