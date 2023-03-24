@@ -43,7 +43,7 @@ Modify the new file or string to make your analysis.
 
 # Utils
 ### Fixing the SVG export from matplotlib
-When saving the matplotlib figure as SVG, the syntax used doesn't contain any <text></text>. Instead, matplotlib opts for creating there own letters as mathematical curves. This can be an issue due to the "low resolution" aspect of these curves. To solve this, an utility tool was developed to find and replace the curves for letters.
+When saving the matplotlib figure as SVG, the syntax used doesn't contain any &lt;text&gt;&lt;/text&gt;. Instead, matplotlib opts for creating there own letters as mathematical curves. This can be an issue due to the "low resolution" aspect of these curves. To solve this, an utility tool was developed to find and replace the curves for letters.
 
 Additionally, when using LaTex equations in labels and/or legends, some elements can also be converted into HTML syntax.
 
