@@ -58,7 +58,7 @@ Using utils.SVGText() allows the transformation from:
 | \\right | \\sqrt | \\sqrt[3] | \\sqrt[4] |
 | ^ | ^{} | _ | _{} |
 
-into the equivalent <tspan></tspan> around the tag. More LaTex markups will be added in the future
+into the equivalent &lt;tspan&gt;&lt;/tspan&gt; around the tag. More LaTex markups will be added in the future
 
 # Dependencies
   - [Numpy](https://numpy.org)
