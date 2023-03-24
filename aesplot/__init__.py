@@ -138,7 +138,7 @@ class PlotLikeR():
                     else:
                         exec(f'self.{f} = self.{f}[self.{f}["{k}"]=="{v}"]')
 
-        def plt_cfg(self):
+        def plot_cfg(self):
             if not self.plot_cfg_bool:
                 plt.rcParams.update({
                     'font.family': 'serif',
