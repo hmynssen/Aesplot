@@ -250,7 +250,7 @@ class PlotLikeR():
                     if 'rib' in par.keys() and par['rib']:
                         ts = abs(scipy.stats.t.ppf(1-(1-0.95)/2, len(x)-2))
                         self._plot_ci_manual(ts, len(x), x, y, x2, y2,
-                                    col=par["cci"] if "cci" in par.keys() else "ligthgrey",
+                                    col=par["cci"] if "cci" in par.keys() else "lightgrey",
                                     zorder=par['zorder'] if 'zorder' in par.keys() else 0)
                 else:
                     err_msg = '''
@@ -277,7 +277,7 @@ class PlotLikeR():
                 self.ax.scatter(x,y,
                     c=par["cs"] if 'cs' in par.keys() else 'black',
                     marker=par["marker"] if 'marker' in par.keys() else 'o',
-                    s=par['s'] if 's' in par.keys() else 5,
+                    s=par['ss'] if 'ss' in par.keys() else 5,
                     label=par['label'] if 'label' in par.keys() else '',
                     zorder=3*index+2)
         if self.is_legend:
@@ -299,13 +299,15 @@ class PlotLikeR():
                 alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
         else:
             gmp = grid_minor_params
-            self.ax.grid(lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
+            self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+                lw=gmp['lw'] if 'lw' in gmp.keys() else 0.6,
                 ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
                 which='minor',
                 alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.5)
 
             gmp = grid_major_params
-            self.ax.grid(lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
+            self.ax.grid(c=gmp['c'] if 'c' in gmp.keys() else "white",
+                lw=gmp['lw'] if 'lw' in gmp.keys() else 1.5,
                 ls=gmp['ls'] if 'ls' in gmp.keys() else '-',
                 which='major',
                 alpha=gmp['alpha'] if 'alpha' in gmp.keys() else 0.75)
@@ -567,6 +569,7 @@ class PlotLikeR():
         for k in keys:
             results[k] = eval(f'res.{k}')
         results['DOF'] = x.shape[0]-2
+        results['r-squared'] = res.rvalue**2
         self.numerical_results[f'{name}'] = {'lin_reg':results}
         return x2,y2
 
@@ -578,11 +581,12 @@ class PlotLikeR():
         else:
             x2 = np.linspace(np.min(x), np.max(x), len(x))
         y2 = fit_func(x2,*res)
-        # results = {}
-        # for k in keys:
-        #     results[k] = eval(f'res.{k}')
-        # results['DOF'] = x.shape[0]-2
-        # self.numerical_results[f'{name}'] = {'lin_reg':results}
+        results = {}
+        for par,val,err in zip(fit_func.__code__.co_varnames[1:],res,perr):
+            results[par] = val
+            results[f'{par}_err'] = err
+        results['DOF'] = x.shape[0]-2
+        self.numerical_results[f'{name}'] = {'fit_function_reg':results}
         return x2,y2
 
     def _plot(self, x, y, par, index):
