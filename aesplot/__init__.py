@@ -183,7 +183,7 @@ class PlotLikeR():
             if not key in grab_params:
                 continue
             plt.rcParams.update({
-                f'{key}':f'{mat_params[key]}'
+                f'{key}':f'{grid_params[key]}'
             })
         self.plot_cfg_grid_bool = True
 
@@ -369,7 +369,7 @@ class PlotLikeR():
             if isinstance(high,float) and not isinstance(low,float):
                 print('Low limit for xticks was never set')
                 return
-            if isinstance(high, flaot) and isinstance(low,float):
+            if isinstance(high, float) and isinstance(low,float):
                 if not isinstance(interval,float):
                     print('Interval was not set or is not a number')
                     interval = (high-low)%4
@@ -403,7 +403,7 @@ class PlotLikeR():
             if isinstance(high,float) and not isinstance(low,float):
                 print('Low limit for yticks was never set')
                 return
-            if isinstance(high, flaot) and isinstance(low,float):
+            if isinstance(high, float) and isinstance(low,float):
                 if not isinstance(interval,float):
                     print('Interval was not set for yticks or is not a number')
                     interval = (high-low)%4
